@@ -434,6 +434,12 @@ module Sinatra
     def stream(keep_open = false)
       scheduler = env['async.callback'] ? EventMachine : Stream
       current   = @params.dup
+
+      if env['async.close']
+        env['async.close'].callback { body.close }
+        env['async.close'].errback { body.close }
+      end
+
       body Stream.new(scheduler, keep_open) { |out| with_params(current) { yield(out) } }
     end
 
